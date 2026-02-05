@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Aires Acondicionados</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0066cc 0%, #00aaff 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0066cc 0%, #00aaff 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header .logo {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        header .subtitle {
+            font-size: 1.2em;
+            letter-spacing: 4px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            opacity: 0.95;
+        }
+
+        header .phone {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 3px solid #dee2e6;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #0066cc;
+            border-bottom: 3px solid #0066cc;
+            margin-bottom: -3px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #0066cc 0%, #00aaff 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0066cc 0%, #00aaff 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 102, 204, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #0066cc 0%, #00aaff 100%);
+            color: white;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #dee2e6;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 25px;
+            font-size: 15px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close-modal:hover {
+            color: #000;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+
+        /* CALENDARIO */
+        .calendar-container {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .calendar-view {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header h3 {
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-nav button {
+            padding: 8px 15px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .calendar-nav button:hover {
+            background: #0052a3;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .calendar-day {
+            min-height: 80px;
+            padding: 8px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: white;
+        }
+
+        .calendar-day:hover {
+            border-color: #0066cc;
+            box-shadow: 0 2px 8px rgba(0,102,204,0.2);
+        }
+
+        .calendar-day.other-month {
+            opacity: 0.3;
+        }
+
+        .calendar-day.today {
+            background: #e3f2fd;
+            border-color: #0066cc;
+        }
+
+        .calendar-day.selected {
+            background: #0066cc;
+            color: white;
+            border-color: #0066cc;
+        }
+
+        .calendar-day.ocupado {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+
+        .calendar-day.ocupado:hover {
+            border-color: #d32f2f;
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+        }
+
+        .calendar-day.libre {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .calendar-day.libre:hover {
+            border-color: #388e3c;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        .calendar-day.selected.ocupado {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+
+        .calendar-day.selected.libre {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .calendar-day.selected .day-number {
+            color: white;
+        }
+
+        .day-events {
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .event-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #d32f2f;
+            margin-right: 3px;
+        }
+
+        .calendar-day.selected .event-dot {
+            background: white;
+        }
+
+        .agenda-sidebar {
+            width: 350px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .agenda-sidebar h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .agenda-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .agenda-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #0066cc;
+        }
+
+        .agenda-item-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .agenda-item-details {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .empty-agenda {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        @media (max-width: 1200px) {
+            .calendar-container {
+                flex-direction: column;
+            }
+            
+            .agenda-sidebar {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .calendar-grid {
+                gap: 2px;
+            }
+            
+            .calendar-day {
+                min-height: 60px;
+                padding: 5px;
+            }
+            
+            .day-number {
+                font-size: 12px;
+            }
+            
+            .day-events {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">PABLO PENA</div>
+            <div class="subtitle">INSTALACIÓN & SERVICE</div>
+            <div class="phone">📞 096 551 135</div>
+        </header>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('clientes')">👥 Clientes</button>
+            <button class="nav-tab" onclick="switchTab('finanzas')">💰 Finanzas</button>
+            <button class="nav-tab" onclick="switchTab('inventario')">📦 Inventario</button>
+            <button class="nav-tab" onclick="switchTab('servicios')">🔧 Servicios</button>
+            <button class="nav-tab" onclick="switchTab('agenda')">📅 Agenda</button>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                <h2>Resumen General</h2>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn btn-success" onclick="exportarDatos()">📥 Exportar Datos</button>
+                    <label for="importFile" class="btn btn-primary" style="margin: 0; cursor: pointer;">📤 Importar Datos</label>
+                    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importarDatos(event)">
+                    <button class="btn btn-danger" onclick="borrarTodo()">🗑️ Borrar Todo</button>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Clientes</h3>
+                    <div class="value" id="totalClientes">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Ingresos del Mes</h3>
+                    <div class="value" id="ingresosMes">$0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Gastos del Mes</h3>
+                    <div class="value" id="gastosMes">$0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Balance</h3>
+                    <div class="value" id="balance">$0</div>
+                </div>
+            </div>
+
+            <h3>Últimos Servicios</h3>
+            <table id="ultimosServicios">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Servicio</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- CLIENTES -->
+        <div id="clientes" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Gestión de Clientes</h2>
+                <button class="btn btn-primary" onclick="openModal('clienteModal')">+ Agregar Cliente</button>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchClientes" placeholder="🔍 Buscar clientes..." onkeyup="filterTable('clientesTable', 'searchClientes')">
+            </div>
+
+            <table id="clientesTable">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Email</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- FINANZAS -->
+        <div id="finanzas" class="tab-content">
+            <h2>Control Financiero</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <h3>Total Ingresos</h3>
+                    <div class="value" id="totalIngresos">$0</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
+                    <h3>Total Gastos</h3>
+                    <div class="value" id="totalGastos">$0</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <h3>Balance Total</h3>
+                    <div class="value" id="balanceTotal">$0</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn btn-success" onclick="openModal('ingresoModal')">+ Ingreso</button>
+                <button class="btn btn-danger" onclick="openModal('gastoModal')">+ Gasto</button>
+            </div>
+
+            <h3>Movimientos Recientes</h3>
+            <table id="finanzasTable">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th>Monto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- INVENTARIO -->
+        <div id="inventario" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Inventario de Aires</h2>
+                <button class="btn btn-primary" onclick="openModal('inventarioModal')">+ Agregar Equipo</button>
+            </div>
+
+            <table id="inventarioTable">
+                <thead>
+                    <tr>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>BTU</th>
+                        <th>Tipo</th>
+                        <th>Stock</th>
+                        <th>Precio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- SERVICIOS -->
+        <div id="servicios" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Servicios Realizados</h2>
+                <button class="btn btn-primary" onclick="openModal('servicioModal')">+ Nuevo Servicio</button>
+            </div>
+
+            <table id="serviciosTable">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Tipo Servicio</th>
+                        <th>Equipo</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- AGENDA -->
+        <div id="agenda" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Agenda de Servicios</h2>
+                <button class="btn btn-primary" onclick="openModal('agendaModal')">+ Agendar Servicio</button>
+            </div>
+
+            <div class="calendar-container">
+                <div class="calendar-view">
+                    <div class="calendar-header">
+                        <h3 id="currentMonth"></h3>
+                        <div class="calendar-nav">
+                            <button onclick="cambiarMes(-1)">◀ Anterior</button>
+                            <button onclick="irHoy()">Hoy</button>
+                            <button onclick="cambiarMes(1)">Siguiente ▶</button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+                
+                <div class="agenda-sidebar">
+                    <h3 id="agendaSidebarTitle">Servicios del día</h3>
+                    <div class="agenda-list" id="agendaList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES -->
+    <!-- Modal Cliente -->
+    <div id="clienteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" onclick="closeModal('clienteModal')">&times;</span>
+                <h2>Agregar Cliente</h2>
+            </div>
+            <form id="clienteForm" onsubmit="agregarCliente(event)">
+                <div class="form-group">
+                    <label>Nombre Completo *</label>
+                    <input type="text" id="clienteNombre" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Teléfono *</label>
+                        <input type="tel" id="clienteTelefono" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="clienteEmail">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Dirección *</label>
+                    <input type="text" id="clienteDireccion" required>
+                </div>
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="clienteNotas"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ingreso -->
+    <div id="ingresoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" onclick="closeModal('ingresoModal')">&times;</span>
+                <h2>Registrar Ingreso</h2>
+            </div>
+            <form id="ingresoForm" onsubmit="agregarIngreso(event)">
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" id="ingresoFecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción *</label>
+                    <input type="text" id="ingresoDescripcion" required>
+                </div>
+                <div class="form-group">
+                    <label>Monto *</label>
+                    <input type="number" id="ingresoMonto" step="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-success">Guardar Ingreso</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Gasto -->
+    <div id="gastoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" onclick="closeModal('gastoModal')">&times;</span>
+                <h2>Registrar Gasto</h2>
+            </div>
+            <form id="gastoForm" onsubmit="agregarGasto(event)">
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" id="gastoFecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Descripción *</label>
+                    <input type="text" id="gastoDescripcion" required>
+                </div>
+                <div class="form-group">
+                    <label>Monto *</label>
+                    <input type="number" id="gastoMonto" step="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-danger">Guardar Gasto</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Inventario -->
+    <div id="inventarioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" onclick="closeModal('inventarioModal')">&times;</span>
+                <h2>Agregar Equipo</h2>
+            </div>
+            <form id="inventarioForm" onsubmit="agregarInventario(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Marca *</label>
+                        <input type="text" id="invMarca" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Modelo *</label>
+                        <input type="text" id="invModelo" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>BTU *</label>
+                        <input type="number" id="invBTU" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo *</label>
+                        <select id="invTipo" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="Split">Split</option>
+                            <option value="Ventana">Ventana</option>
+                            <option value="Central">Central</option>
+                            <option value="Portátil">Portátil</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Stock *</label>
+                        <input type="number" id="invStock" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Precio *</label>
+                        <input type="number" id="invPrecio" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="invDescripcion"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Equipo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Servicio -->
+    <div id="servicioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" onclick="closeModal('servicioModal')">&times;</span>
+                <h2>Registrar Servicio</h2>
+            </div>
+            <form id="servicioForm" onsubmit="agregarServicio(event)">
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" id="servFecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Cliente *</label>
+                    <select id="servCliente" required>
+                        <option value="">Seleccionar cliente...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Servicio *</label>
+                    <select id="servTipo" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="Instalación">Instalación</option>
+                        <option value="Desinstalación">Desinstalación</option>
+                        <option value="Mantenimiento">Mantenimiento</option>
+                        <option value="Reparación">Reparación</option>
+                        <option value="Revisión">Revisión</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Equipo</label>
+                    <input type="text" id="servEquipo">
+                </div>
+                <div class="form-group">
+                    <label>Monto *</label>
+                    <input type="number" id="servMonto" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Estado *</label>
+                    <select id="servEstado" required>
+                        <option value="Completado">Completado</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En Proceso">En Proceso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="servNotas"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Servicio</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Agenda -->
+    <div id="agendaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close-modal" onclick="closeModal('agendaModal')">&times;</span>
+                <h2>Agendar Servicio</h2>
+            </div>
+            <form id="agendaForm" onsubmit="agendarServicio(event)">
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" id="agendaFecha" required>
+                </div>
+                <div class="form-group">
+                    <label>Hora *</label>
+                    <input type="time" id="agendaHora" required>
+                </div>
+                <div class="form-group">
+                    <label>Cliente *</label>
+                    <select id="agendaCliente" required>
+                        <option value="">Seleccionar cliente...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Servicio *</label>
+                    <select id="agendaTipo" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="Instalación">Instalación</option>
+                        <option value="Desinstalación">Desinstalación</option>
+                        <option value="Mantenimiento">Mantenimiento</option>
+                        <option value="Reparación">Reparación</option>
+                        <option value="Revisión">Revisión</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dirección *</label>
+                    <input type="text" id="agendaDireccion" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" id="agendaTelefono">
+                </div>
+                <div class="form-group">
+                    <label>Notas</label>
+                    <textarea id="agendaNotas"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Agendar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Datos en localStorage
+        let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+        let finanzas = JSON.parse(localStorage.getItem('finanzas')) || [];
+        let inventario = JSON.parse(localStorage.getItem('inventario')) || [];
+        let servicios = JSON.parse(localStorage.getItem('servicios')) || [];
+        let agendados = JSON.parse(localStorage.getItem('agendados')) || [];
+
+        // Variables del calendario
+        let mesActual = new Date().getMonth();
+        let añoActual = new Date().getFullYear();
+        let diaSeleccionado = null;
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            actualizarDashboard();
+            renderClientes();
+            renderFinanzas();
+            renderInventario();
+            renderServicios();
+            actualizarSelectClientes();
+            renderCalendario();
+            
+            // Establecer fecha de hoy por defecto
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                input.value = today;
+            });
+        });
+
+        // Navegación
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Modales
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            // Resetear modo edición de cliente
+            if (modalId === 'clienteModal') {
+                clienteEditando = null;
+                document.querySelector('#clienteModal h2').textContent = 'Agregar Cliente';
+            }
+            // Resetear modo edición de finanzas
+            if (modalId === 'ingresoModal') {
+                finanzaEditando = null;
+                document.querySelector('#ingresoModal h2').textContent = 'Registrar Ingreso';
+            }
+            if (modalId === 'gastoModal') {
+                finanzaEditando = null;
+                document.querySelector('#gastoModal h2').textContent = 'Registrar Gasto';
+            }
+            // Resetear modo edición de inventario
+            if (modalId === 'inventarioModal') {
+                inventarioEditando = null;
+                document.querySelector('#inventarioModal h2').textContent = 'Agregar Equipo';
+            }
+            // Resetear modo edición de servicios
+            if (modalId === 'servicioModal') {
+                servicioEditando = null;
+                document.querySelector('#servicioModal h2').textContent = 'Registrar Servicio';
+            }
+            // Resetear modo edición de agenda
+            if (modalId === 'agendaModal') {
+                agendaEditando = null;
+                document.querySelector('#agendaModal h2').textContent = 'Agendar Servicio';
+            }
+        }
+
+        // CLIENTES
+        let clienteEditando = null;
+
+        function agregarCliente(e) {
+            e.preventDefault();
+            
+            if (clienteEditando) {
+                // Modo edición
+                const index = clientes.findIndex(c => c.id === clienteEditando);
+                if (index !== -1) {
+                    clientes[index] = {
+                        id: clienteEditando,
+                        nombre: document.getElementById('clienteNombre').value,
+                        telefono: document.getElementById('clienteTelefono').value,
+                        email: document.getElementById('clienteEmail').value,
+                        direccion: document.getElementById('clienteDireccion').value,
+                        notas: document.getElementById('clienteNotas').value
+                    };
+                }
+                clienteEditando = null;
+                document.querySelector('#clienteModal h2').textContent = 'Agregar Cliente';
+            } else {
+                // Modo agregar
+                const cliente = {
+                    id: Date.now(),
+                    nombre: document.getElementById('clienteNombre').value,
+                    telefono: document.getElementById('clienteTelefono').value,
+                    email: document.getElementById('clienteEmail').value,
+                    direccion: document.getElementById('clienteDireccion').value,
+                    notas: document.getElementById('clienteNotas').value
+                };
+                clientes.push(cliente);
+            }
+            
+            localStorage.setItem('clientes', JSON.stringify(clientes));
+            renderClientes();
+            actualizarDashboard();
+            actualizarSelectClientes();
+            closeModal('clienteModal');
+            document.getElementById('clienteForm').reset();
+        }
+
+        function editarCliente(id) {
+            const cliente = clientes.find(c => c.id === id);
+            if (!cliente) return;
+            
+            clienteEditando = id;
+            document.getElementById('clienteNombre').value = cliente.nombre;
+            document.getElementById('clienteTelefono').value = cliente.telefono;
+            document.getElementById('clienteEmail').value = cliente.email || '';
+            document.getElementById('clienteDireccion').value = cliente.direccion;
+            document.getElementById('clienteNotas').value = cliente.notas || '';
+            
+            document.querySelector('#clienteModal h2').textContent = 'Editar Cliente';
+            openModal('clienteModal');
+        }
+
+        function renderClientes() {
+            const tbody = document.querySelector('#clientesTable tbody');
+            tbody.innerHTML = '';
+            
+            clientes.forEach(cliente => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${cliente.nombre}</td>
+                        <td>${cliente.telefono}</td>
+                        <td>${cliente.direccion}</td>
+                        <td>${cliente.email || '-'}</td>
+                        <td>
+                            <button class="btn btn-primary" style="margin-right: 5px;" onclick="editarCliente(${cliente.id})">✏️ Editar</button>
+                            <button class="btn btn-danger" onclick="eliminarCliente(${cliente.id})">🗑️ Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function eliminarCliente(id) {
+            if (confirm('¿Seguro que deseas eliminar este cliente?')) {
+                clientes = clientes.filter(c => c.id !== id);
+                localStorage.setItem('clientes', JSON.stringify(clientes));
+                renderClientes();
+                actualizarDashboard();
+            }
+        }
+
+        function actualizarSelectClientes() {
+            const select = document.getElementById('servCliente');
+            const selectAgenda = document.getElementById('agendaCliente');
+            
+            select.innerHTML = '<option value="">Seleccionar cliente...</option>';
+            selectAgenda.innerHTML = '<option value="">Seleccionar cliente...</option>';
+            
+            clientes.forEach(cliente => {
+                select.innerHTML += `<option value="${cliente.nombre}">${cliente.nombre}</option>`;
+                selectAgenda.innerHTML += `<option value="${cliente.id}">${cliente.nombre}</option>`;
+            });
+        }
+
+        // FINANZAS
+        let finanzaEditando = null;
+
+        function agregarIngreso(e) {
+            e.preventDefault();
+            
+            if (finanzaEditando) {
+                // Modo edición
+                const index = finanzas.findIndex(f => f.id === finanzaEditando);
+                if (index !== -1) {
+                    finanzas[index] = {
+                        id: finanzaEditando,
+                        tipo: 'Ingreso',
+                        fecha: document.getElementById('ingresoFecha').value,
+                        descripcion: document.getElementById('ingresoDescripcion').value,
+                        monto: parseFloat(document.getElementById('ingresoMonto').value)
+                    };
+                }
+                finanzaEditando = null;
+                document.querySelector('#ingresoModal h2').textContent = 'Registrar Ingreso';
+            } else {
+                // Modo agregar
+                const ingreso = {
+                    id: Date.now(),
+                    tipo: 'Ingreso',
+                    fecha: document.getElementById('ingresoFecha').value,
+                    descripcion: document.getElementById('ingresoDescripcion').value,
+                    monto: parseFloat(document.getElementById('ingresoMonto').value)
+                };
+                finanzas.push(ingreso);
+            }
+            
+            localStorage.setItem('finanzas', JSON.stringify(finanzas));
+            renderFinanzas();
+            actualizarDashboard();
+            closeModal('ingresoModal');
+            document.getElementById('ingresoForm').reset();
+        }
+
+        function agregarGasto(e) {
+            e.preventDefault();
+            
+            if (finanzaEditando) {
+                // Modo edición
+                const index = finanzas.findIndex(f => f.id === finanzaEditando);
+                if (index !== -1) {
+                    finanzas[index] = {
+                        id: finanzaEditando,
+                        tipo: 'Gasto',
+                        fecha: document.getElementById('gastoFecha').value,
+                        descripcion: document.getElementById('gastoDescripcion').value,
+                        monto: parseFloat(document.getElementById('gastoMonto').value)
+                    };
+                }
+                finanzaEditando = null;
+                document.querySelector('#gastoModal h2').textContent = 'Registrar Gasto';
+            } else {
+                // Modo agregar
+                const gasto = {
+                    id: Date.now(),
+                    tipo: 'Gasto',
+                    fecha: document.getElementById('gastoFecha').value,
+                    descripcion: document.getElementById('gastoDescripcion').value,
+                    monto: parseFloat(document.getElementById('gastoMonto').value)
+                };
+                finanzas.push(gasto);
+            }
+            
+            localStorage.setItem('finanzas', JSON.stringify(finanzas));
+            renderFinanzas();
+            actualizarDashboard();
+            closeModal('gastoModal');
+            document.getElementById('gastoForm').reset();
+        }
+
+        function editarFinanza(id) {
+            const finanza = finanzas.find(f => f.id === id);
+            if (!finanza) return;
+            
+            finanzaEditando = id;
+            
+            if (finanza.tipo === 'Ingreso') {
+                document.getElementById('ingresoFecha').value = finanza.fecha;
+                document.getElementById('ingresoDescripcion').value = finanza.descripcion;
+                document.getElementById('ingresoMonto').value = finanza.monto;
+                document.querySelector('#ingresoModal h2').textContent = 'Editar Ingreso';
+                openModal('ingresoModal');
+            } else {
+                document.getElementById('gastoFecha').value = finanza.fecha;
+                document.getElementById('gastoDescripcion').value = finanza.descripcion;
+                document.getElementById('gastoMonto').value = finanza.monto;
+                document.querySelector('#gastoModal h2').textContent = 'Editar Gasto';
+                openModal('gastoModal');
+            }
+        }
+
+        function renderFinanzas() {
+            const tbody = document.querySelector('#finanzasTable tbody');
+            tbody.innerHTML = '';
+            
+            const finanzasOrdenadas = [...finanzas].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            
+            finanzasOrdenadas.forEach(item => {
+                const badge = item.tipo === 'Ingreso' ? 'badge-success' : 'badge-danger';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${new Date(item.fecha).toLocaleDateString()}</td>
+                        <td><span class="badge ${badge}">${item.tipo}</span></td>
+                        <td>${item.descripcion}</td>
+                        <td>$${item.monto.toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-primary" style="margin-right: 5px; padding: 8px 15px; font-size: 14px;" onclick="editarFinanza(${item.id})">✏️ Editar</button>
+                            <button class="btn btn-danger" onclick="eliminarFinanza(${item.id})">🗑️ Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // Calcular totales
+            const totalIngresos = finanzas.filter(f => f.tipo === 'Ingreso').reduce((sum, f) => sum + f.monto, 0);
+            const totalGastos = finanzas.filter(f => f.tipo === 'Gasto').reduce((sum, f) => sum + f.monto, 0);
+            
+            document.getElementById('totalIngresos').textContent = `$${totalIngresos.toFixed(2)}`;
+            document.getElementById('totalGastos').textContent = `$${totalGastos.toFixed(2)}`;
+            document.getElementById('balanceTotal').textContent = `$${(totalIngresos - totalGastos).toFixed(2)}`;
+        }
+
+        function eliminarFinanza(id) {
+            if (confirm('¿Seguro que deseas eliminar este registro?')) {
+                finanzas = finanzas.filter(f => f.id !== id);
+                localStorage.setItem('finanzas', JSON.stringify(finanzas));
+                renderFinanzas();
+                actualizarDashboard();
+            }
+        }
+
+        // INVENTARIO
+        let inventarioEditando = null;
+
+        function agregarInventario(e) {
+            e.preventDefault();
+            
+            if (inventarioEditando) {
+                // Modo edición
+                const index = inventario.findIndex(i => i.id === inventarioEditando);
+                if (index !== -1) {
+                    inventario[index] = {
+                        id: inventarioEditando,
+                        marca: document.getElementById('invMarca').value,
+                        modelo: document.getElementById('invModelo').value,
+                        btu: document.getElementById('invBTU').value,
+                        tipo: document.getElementById('invTipo').value,
+                        stock: parseInt(document.getElementById('invStock').value),
+                        precio: parseFloat(document.getElementById('invPrecio').value),
+                        descripcion: document.getElementById('invDescripcion').value
+                    };
+                }
+                inventarioEditando = null;
+                document.querySelector('#inventarioModal h2').textContent = 'Agregar Equipo';
+            } else {
+                // Modo agregar
+                const equipo = {
+                    id: Date.now(),
+                    marca: document.getElementById('invMarca').value,
+                    modelo: document.getElementById('invModelo').value,
+                    btu: document.getElementById('invBTU').value,
+                    tipo: document.getElementById('invTipo').value,
+                    stock: parseInt(document.getElementById('invStock').value),
+                    precio: parseFloat(document.getElementById('invPrecio').value),
+                    descripcion: document.getElementById('invDescripcion').value
+                };
+                inventario.push(equipo);
+            }
+            
+            localStorage.setItem('inventario', JSON.stringify(inventario));
+            renderInventario();
+            closeModal('inventarioModal');
+            document.getElementById('inventarioForm').reset();
+        }
+
+        function editarInventario(id) {
+            const equipo = inventario.find(i => i.id === id);
+            if (!equipo) return;
+            
+            inventarioEditando = id;
+            document.getElementById('invMarca').value = equipo.marca;
+            document.getElementById('invModelo').value = equipo.modelo;
+            document.getElementById('invBTU').value = equipo.btu;
+            document.getElementById('invTipo').value = equipo.tipo;
+            document.getElementById('invStock').value = equipo.stock;
+            document.getElementById('invPrecio').value = equipo.precio;
+            document.getElementById('invDescripcion').value = equipo.descripcion || '';
+            
+            document.querySelector('#inventarioModal h2').textContent = 'Editar Equipo';
+            openModal('inventarioModal');
+        }
+
+        function renderInventario() {
+            const tbody = document.querySelector('#inventarioTable tbody');
+            tbody.innerHTML = '';
+            
+            inventario.forEach(equipo => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${equipo.marca}</td>
+                        <td>${equipo.modelo}</td>
+                        <td>${equipo.btu}</td>
+                        <td>${equipo.tipo}</td>
+                        <td>${equipo.stock}</td>
+                        <td>$${equipo.precio.toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-primary" style="margin-right: 5px; padding: 8px 15px; font-size: 14px;" onclick="editarInventario(${equipo.id})">✏️ Editar</button>
+                            <button class="btn btn-danger" onclick="eliminarInventario(${equipo.id})">🗑️ Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function eliminarInventario(id) {
+            if (confirm('¿Seguro que deseas eliminar este equipo?')) {
+                inventario = inventario.filter(i => i.id !== id);
+                localStorage.setItem('inventario', JSON.stringify(inventario));
+                renderInventario();
+            }
+        }
+
+        // SERVICIOS
+        let servicioEditando = null;
+
+        function agregarServicio(e) {
+            e.preventDefault();
+            
+            if (servicioEditando) {
+                // Modo edición
+                const index = servicios.findIndex(s => s.id === servicioEditando);
+                if (index !== -1) {
+                    servicios[index] = {
+                        id: servicioEditando,
+                        fecha: document.getElementById('servFecha').value,
+                        cliente: document.getElementById('servCliente').value,
+                        tipo: document.getElementById('servTipo').value,
+                        equipo: document.getElementById('servEquipo').value,
+                        monto: parseFloat(document.getElementById('servMonto').value),
+                        estado: document.getElementById('servEstado').value,
+                        notas: document.getElementById('servNotas').value
+                    };
+                }
+                servicioEditando = null;
+                document.querySelector('#servicioModal h2').textContent = 'Registrar Servicio';
+            } else {
+                // Modo agregar
+                const servicio = {
+                    id: Date.now(),
+                    fecha: document.getElementById('servFecha').value,
+                    cliente: document.getElementById('servCliente').value,
+                    tipo: document.getElementById('servTipo').value,
+                    equipo: document.getElementById('servEquipo').value,
+                    monto: parseFloat(document.getElementById('servMonto').value),
+                    estado: document.getElementById('servEstado').value,
+                    notas: document.getElementById('servNotas').value
+                };
+                
+                servicios.push(servicio);
+                
+                // Agregar ingreso automáticamente solo si es nuevo servicio completado
+                if (servicio.estado === 'Completado') {
+                    const ingreso = {
+                        id: Date.now() + 1,
+                        tipo: 'Ingreso',
+                        fecha: servicio.fecha,
+                        descripcion: `${servicio.tipo} - ${servicio.cliente}`,
+                        monto: servicio.monto
+                    };
+                    finanzas.push(ingreso);
+                    localStorage.setItem('finanzas', JSON.stringify(finanzas));
+                }
+            }
+            
+            localStorage.setItem('servicios', JSON.stringify(servicios));
+            renderServicios();
+            renderFinanzas();
+            actualizarDashboard();
+            closeModal('servicioModal');
+            document.getElementById('servicioForm').reset();
+        }
+
+        function editarServicio(id) {
+            const servicio = servicios.find(s => s.id === id);
+            if (!servicio) return;
+            
+            servicioEditando = id;
+            document.getElementById('servFecha').value = servicio.fecha;
+            document.getElementById('servCliente').value = servicio.cliente;
+            document.getElementById('servTipo').value = servicio.tipo;
+            document.getElementById('servEquipo').value = servicio.equipo || '';
+            document.getElementById('servMonto').value = servicio.monto;
+            document.getElementById('servEstado').value = servicio.estado;
+            document.getElementById('servNotas').value = servicio.notas || '';
+            
+            document.querySelector('#servicioModal h2').textContent = 'Editar Servicio';
+            openModal('servicioModal');
+        }
+
+        function renderServicios() {
+            const tbody = document.querySelector('#serviciosTable tbody');
+            tbody.innerHTML = '';
+            
+            const serviciosOrdenados = [...servicios].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            
+            serviciosOrdenados.forEach(servicio => {
+                let badgeClass = 'badge-success';
+                if (servicio.estado === 'Pendiente') badgeClass = 'badge-warning';
+                if (servicio.estado === 'En Proceso') badgeClass = 'badge-warning';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${new Date(servicio.fecha).toLocaleDateString()}</td>
+                        <td>${servicio.cliente}</td>
+                        <td>${servicio.tipo}</td>
+                        <td>${servicio.equipo || '-'}</td>
+                        <td>$${servicio.monto.toFixed(2)}</td>
+                        <td><span class="badge ${badgeClass}">${servicio.estado}</span></td>
+                        <td>
+                            <button class="btn btn-primary" style="margin-right: 5px; padding: 8px 15px; font-size: 14px;" onclick="editarServicio(${servicio.id})">✏️ Editar</button>
+                            <button class="btn btn-danger" onclick="eliminarServicio(${servicio.id})">🗑️ Eliminar</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            // Actualizar últimos servicios en dashboard
+            const tbodyDash = document.querySelector('#ultimosServicios tbody');
+            tbodyDash.innerHTML = '';
+            serviciosOrdenados.slice(0, 5).forEach(servicio => {
+                let badgeClass = 'badge-success';
+                if (servicio.estado === 'Pendiente') badgeClass = 'badge-warning';
+                
+                tbodyDash.innerHTML += `
+                    <tr>
+                        <td>${new Date(servicio.fecha).toLocaleDateString()}</td>
+                        <td>${servicio.cliente}</td>
+                        <td>${servicio.tipo}</td>
+                        <td>$${servicio.monto.toFixed(2)}</td>
+                        <td><span class="badge ${badgeClass}">${servicio.estado}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function eliminarServicio(id) {
+            if (confirm('¿Seguro que deseas eliminar este servicio?')) {
+                servicios = servicios.filter(s => s.id !== id);
+                localStorage.setItem('servicios', JSON.stringify(servicios));
+                renderServicios();
+                actualizarDashboard();
+            }
+        }
+
+        // DASHBOARD
+        function actualizarDashboard() {
+            document.getElementById('totalClientes').textContent = clientes.length;
+            
+            const hoy = new Date();
+            const mesActual = hoy.getMonth();
+            const añoActual = hoy.getFullYear();
+            
+            const ingresosMes = finanzas
+                .filter(f => {
+                    const fecha = new Date(f.fecha);
+                    return f.tipo === 'Ingreso' && fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual;
+                })
+                .reduce((sum, f) => sum + f.monto, 0);
+            
+            const gastosMes = finanzas
+                .filter(f => {
+                    const fecha = new Date(f.fecha);
+                    return f.tipo === 'Gasto' && fecha.getMonth() === mesActual && fecha.getFullYear() === añoActual;
+                })
+                .reduce((sum, f) => sum + f.monto, 0);
+            
+            document.getElementById('ingresosMes').textContent = `$${ingresosMes.toFixed(2)}`;
+            document.getElementById('gastosMes').textContent = `$${gastosMes.toFixed(2)}`;
+            document.getElementById('balance').textContent = `$${(ingresosMes - gastosMes).toFixed(2)}`;
+        }
+
+        // Búsqueda
+        function filterTable(tableId, searchId) {
+            const input = document.getElementById(searchId);
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById(tableId);
+            const tr = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < tr.length; i++) {
+                let found = false;
+                const td = tr[i].getElementsByTagName('td');
+                for (let j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        if (td[j].innerHTML.toUpperCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                tr[i].style.display = found ? '' : 'none';
+            }
+        }
+
+        // CALENDARIO Y AGENDA
+        function renderCalendario() {
+            const primerDia = new Date(añoActual, mesActual, 1);
+            const ultimoDia = new Date(añoActual, mesActual + 1, 0);
+            const diasMesAnterior = new Date(añoActual, mesActual, 0).getDate();
+            const primerDiaSemana = primerDia.getDay();
+            const ultimoDiaMes = ultimoDia.getDate();
+            
+            // Actualizar título
+            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            document.getElementById('currentMonth').textContent = `${meses[mesActual]} ${añoActual}`;
+            
+            // Limpiar grid
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            // Días de la semana
+            const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            diasSemana.forEach(dia => {
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                header.textContent = dia;
+                grid.appendChild(header);
+            });
+            
+            // Días del mes anterior
+            for (let i = primerDiaSemana - 1; i >= 0; i--) {
+                const dia = diasMesAnterior - i;
+                const div = crearDiaCalendario(dia, mesActual - 1, añoActual, true);
+                grid.appendChild(div);
+            }
+            
+            // Días del mes actual
+            for (let dia = 1; dia <= ultimoDiaMes; dia++) {
+                const div = crearDiaCalendario(dia, mesActual, añoActual, false);
+                grid.appendChild(div);
+            }
+            
+            // Días del mes siguiente
+            const diasRestantes = 42 - grid.children.length + 7; // +7 por los headers
+            for (let dia = 1; dia <= diasRestantes; dia++) {
+                const div = crearDiaCalendario(dia, mesActual + 1, añoActual, true);
+                grid.appendChild(div);
+            }
+            
+            // Mostrar agenda del día actual si no hay día seleccionado
+            if (!diaSeleccionado) {
+                const hoy = new Date();
+                mostrarAgendaDia(hoy.getDate(), hoy.getMonth(), hoy.getFullYear());
+            }
+        }
+
+        function crearDiaCalendario(dia, mes, año, otroMes) {
+            const div = document.createElement('div');
+            div.className = 'calendar-day';
+            if (otroMes) div.classList.add('other-month');
+            
+            // Ajustar mes y año si es necesario
+            let mesReal = mes;
+            let añoReal = año;
+            if (mes < 0) {
+                mesReal = 11;
+                añoReal--;
+            } else if (mes > 11) {
+                mesReal = 0;
+                añoReal++;
+            }
+            
+            // Verificar si es hoy
+            const hoy = new Date();
+            if (dia === hoy.getDate() && mesReal === hoy.getMonth() && añoReal === hoy.getFullYear()) {
+                div.classList.add('today');
+            }
+            
+            // Contar eventos del día
+            const fecha = `${añoReal}-${String(mesReal + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+            const eventosDelDia = agendados.filter(a => a.fecha === fecha);
+            
+            // Agregar clase según si está ocupado o libre (solo para días del mes actual, no otros meses)
+            if (!otroMes) {
+                if (eventosDelDia.length > 0) {
+                    div.classList.add('ocupado');
+                } else {
+                    div.classList.add('libre');
+                }
+            }
+            
+            // Número del día
+            const numDiv = document.createElement('div');
+            numDiv.className = 'day-number';
+            numDiv.textContent = dia;
+            div.appendChild(numDiv);
+            
+            if (eventosDelDia.length > 0) {
+                const eventsDiv = document.createElement('div');
+                eventsDiv.className = 'day-events';
+                eventsDiv.innerHTML = `<span class="event-dot"></span>${eventosDelDia.length} servicio${eventosDelDia.length > 1 ? 's' : ''}`;
+                div.appendChild(eventsDiv);
+            }
+            
+            // Click en el día
+            div.onclick = () => {
+                document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+                div.classList.add('selected');
+                diaSeleccionado = { dia, mes: mesReal, año: añoReal };
+                mostrarAgendaDia(dia, mesReal, añoReal);
+            };
+            
+            return div;
+        }
+
+        function mostrarAgendaDia(dia, mes, año) {
+            const fecha = `${año}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+            const eventosDelDia = agendados.filter(a => a.fecha === fecha).sort((a, b) => a.hora.localeCompare(b.hora));
+            
+            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            
+            document.getElementById('agendaSidebarTitle').textContent = `${dia} de ${meses[mes]} ${año}`;
+            
+            const agendaList = document.getElementById('agendaList');
+            
+            if (eventosDelDia.length === 0) {
+                agendaList.innerHTML = '<div class="empty-agenda">No hay servicios agendados para este día</div>';
+                return;
+            }
+            
+            agendaList.innerHTML = '';
+            eventosDelDia.forEach(evento => {
+                const cliente = clientes.find(c => c.id === evento.clienteId);
+                const item = document.createElement('div');
+                item.className = 'agenda-item';
+                item.innerHTML = `
+                    <div class="agenda-item-header">
+                        ${evento.hora} - ${evento.tipo}
+                    </div>
+                    <div class="agenda-item-details">
+                        👤 ${cliente ? cliente.nombre : 'Cliente no encontrado'}<br>
+                        📍 ${evento.direccion}<br>
+                        ${evento.telefono ? `📞 ${evento.telefono}<br>` : ''}
+                        ${evento.notas ? `📝 ${evento.notas}` : ''}
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <button class="btn btn-primary" style="padding: 6px 12px; font-size: 12px; margin-right: 5px;" onclick="editarAgenda(${evento.id})">✏️ Editar</button>
+                        <button class="btn btn-danger" style="padding: 6px 12px; font-size: 12px;" onclick="eliminarAgenda(${evento.id})">🗑️ Eliminar</button>
+                    </div>
+                `;
+                agendaList.appendChild(item);
+            });
+        }
+
+        function cambiarMes(direccion) {
+            mesActual += direccion;
+            if (mesActual > 11) {
+                mesActual = 0;
+                añoActual++;
+            } else if (mesActual < 0) {
+                mesActual = 11;
+                añoActual--;
+            }
+            diaSeleccionado = null;
+            renderCalendario();
+        }
+
+        function irHoy() {
+            const hoy = new Date();
+            mesActual = hoy.getMonth();
+            añoActual = hoy.getFullYear();
+            diaSeleccionado = null;
+            renderCalendario();
+        }
+
+        let agendaEditando = null;
+
+        function agendarServicio(e) {
+            e.preventDefault();
+            
+            const clienteId = parseInt(document.getElementById('agendaCliente').value);
+            const cliente = clientes.find(c => c.id === clienteId);
+            
+            if (agendaEditando) {
+                // Modo edición
+                const index = agendados.findIndex(a => a.id === agendaEditando);
+                if (index !== -1) {
+                    agendados[index] = {
+                        id: agendaEditando,
+                        fecha: document.getElementById('agendaFecha').value,
+                        hora: document.getElementById('agendaHora').value,
+                        clienteId: clienteId,
+                        tipo: document.getElementById('agendaTipo').value,
+                        direccion: document.getElementById('agendaDireccion').value,
+                        telefono: document.getElementById('agendaTelefono').value,
+                        notas: document.getElementById('agendaNotas').value
+                    };
+                }
+                agendaEditando = null;
+                document.querySelector('#agendaModal h2').textContent = 'Agendar Servicio';
+            } else {
+                // Modo agregar
+                const agendado = {
+                    id: Date.now(),
+                    fecha: document.getElementById('agendaFecha').value,
+                    hora: document.getElementById('agendaHora').value,
+                    clienteId: clienteId,
+                    tipo: document.getElementById('agendaTipo').value,
+                    direccion: document.getElementById('agendaDireccion').value,
+                    telefono: document.getElementById('agendaTelefono').value,
+                    notas: document.getElementById('agendaNotas').value
+                };
+                agendados.push(agendado);
+            }
+            
+            localStorage.setItem('agendados', JSON.stringify(agendados));
+            renderCalendario();
+            closeModal('agendaModal');
+            document.getElementById('agendaForm').reset();
+        }
+
+        function editarAgenda(id) {
+            const agendado = agendados.find(a => a.id === id);
+            if (!agendado) return;
+            
+            agendaEditando = id;
+            document.getElementById('agendaFecha').value = agendado.fecha;
+            document.getElementById('agendaHora').value = agendado.hora;
+            document.getElementById('agendaCliente').value = agendado.clienteId;
+            document.getElementById('agendaTipo').value = agendado.tipo;
+            document.getElementById('agendaDireccion').value = agendado.direccion;
+            document.getElementById('agendaTelefono').value = agendado.telefono || '';
+            document.getElementById('agendaNotas').value = agendado.notas || '';
+            
+            document.querySelector('#agendaModal h2').textContent = 'Editar Servicio Agendado';
+            openModal('agendaModal');
+        }
+
+        function eliminarAgenda(id) {
+            if (confirm('¿Seguro que deseas eliminar este servicio agendado?')) {
+                agendados = agendados.filter(a => a.id !== id);
+                localStorage.setItem('agendados', JSON.stringify(agendados));
+                renderCalendario();
+            }
+        }
+
+        // Autocompletar dirección y teléfono cuando se selecciona un cliente en agenda
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectCliente = document.getElementById('agendaCliente');
+            if (selectCliente) {
+                selectCliente.addEventListener('change', function() {
+                    const clienteId = parseInt(this.value);
+                    const cliente = clientes.find(c => c.id === clienteId);
+                    if (cliente) {
+                        document.getElementById('agendaDireccion').value = cliente.direccion || '';
+                        document.getElementById('agendaTelefono').value = cliente.telefono || '';
+                    }
+                });
+            }
+        });
+
+        // EXPORTAR DATOS
+        function exportarDatos() {
+            const datos = {
+                clientes: clientes,
+                finanzas: finanzas,
+                inventario: inventario,
+                servicios: servicios,
+                agendados: agendados,
+                fechaExportacion: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(datos, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            
+            const fecha = new Date().toISOString().split('T')[0];
+            link.download = `pablo-pena-backup-${fecha}.json`;
+            link.href = url;
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            alert('✅ Datos exportados correctamente. Guarda este archivo en un lugar seguro.');
+        }
+
+        // IMPORTAR DATOS
+        function importarDatos(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const datos = JSON.parse(e.target.result);
+                    
+                    // Validar que el archivo tenga la estructura correcta
+                    if (!datos.clientes || !datos.finanzas || !datos.inventario || !datos.servicios) {
+                        throw new Error('Archivo inválido');
+                    }
+                    
+                    if (confirm('⚠️ ¿Estás seguro? Esto reemplazará TODOS tus datos actuales con los del archivo.')) {
+                        clientes = datos.clientes;
+                        finanzas = datos.finanzas;
+                        inventario = datos.inventario;
+                        servicios = datos.servicios;
+                        agendados = datos.agendados || [];
+                        
+                        localStorage.setItem('clientes', JSON.stringify(clientes));
+                        localStorage.setItem('finanzas', JSON.stringify(finanzas));
+                        localStorage.setItem('inventario', JSON.stringify(inventario));
+                        localStorage.setItem('servicios', JSON.stringify(servicios));
+                        localStorage.setItem('agendados', JSON.stringify(agendados));
+                        
+                        // Actualizar todas las vistas
+                        renderClientes();
+                        renderFinanzas();
+                        renderInventario();
+                        renderServicios();
+                        actualizarDashboard();
+                        actualizarSelectClientes();
+                        renderCalendario();
+                        
+                        alert('✅ Datos importados correctamente!');
+                    }
+                } catch (error) {
+                    alert('❌ Error al importar: El archivo no es válido o está corrupto.');
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Resetear el input para poder cargar el mismo archivo de nuevo si es necesario
+            event.target.value = '';
+        }
+
+        // BORRAR TODO
+        function borrarTodo() {
+            if (confirm('⚠️ ¿SEGURO que quieres BORRAR TODOS LOS DATOS?\n\nEsta acción NO se puede deshacer.\n\nTe recomendamos exportar tus datos primero.')) {
+                if (confirm('⚠️⚠️ ÚLTIMA CONFIRMACIÓN: ¿Borrar TODO permanentemente?')) {
+                    localStorage.clear();
+                    clientes = [];
+                    finanzas = [];
+                    inventario = [];
+                    servicios = [];
+                    agendados = [];
+                    
+                    renderClientes();
+                    renderFinanzas();
+                    renderInventario();
+                    renderServicios();
+                    actualizarDashboard();
+                    actualizarSelectClientes();
+                    renderCalendario();
+                    
+                    alert('🗑️ Todos los datos han sido borrados.');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
